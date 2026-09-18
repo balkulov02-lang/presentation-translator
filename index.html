@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Presentation Translator</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6fb;
+      color: #1f2937;
+    }
+
+    header {
+      background: white;
+      padding: 20px 40px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 60px auto;
+      padding: 20px;
+    }
+
+    .upload-box {
+      background: white;
+      border-radius: 24px;
+      padding: 70px 30px;
+      text-align: center;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+    }
+
+    .icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 32px;
+      margin: 10px 0;
+    }
+
+    .description {
+      color: #6b7280;
+      font-size: 17px;
+      line-height: 1.6;
+      margin-bottom: 35px;
+    }
+
+    .upload-button {
+      display: inline-block;
+      background: #2563eb;
+      color: white;
+      padding: 16px 32px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .upload-button:hover {
+      background: #1d4ed8;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    #fileName {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .info {
+      margin-top: 35px;
+      padding: 20px;
+      background: #eff6ff;
+      border-radius: 14px;
+      text-align: left;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>📚 Presentation Translator</h1>
+  </header>
+
+  <main>
+
+    <div class="upload-box">
+
+      <div class="icon">📊</div>
+
+      <h2>Презентацияны аудар</h2>
+
+      <p class="description">
+        PowerPoint презентациясын жүкте.<br>
+        Презентациядағы сөздерді басып,
+        ағылшынша аудармасын көр.
+      </p>
+
+      <label class="upload-button" for="fileInput">
+        📂 Презентация жүктеу
+      </label>
+
+      <input
+        type="file"
+        id="fileInput"
+        accept=".pptx"
+      >
+
+      <div id="fileName"></div>
+
+      <div class="info">
+        💡 <strong>Біздің мақсат:</strong><br><br>
+        Презентацияны ашамыз → сөзді басамыз →
+        ағылшынша аудармасы бірден шығады.
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+
+    const fileInput = document.getElementById("fileInput");
+    const fileName = document.getElementById("fileName");
+
+    fileInput.addEventListener("change", function () {
+
+      if (fileInput.files.length > 0) {
+
+        const file = fileInput.files[0];
+
+        fileName.textContent =
+          "✅ Таңдалған файл: " + file.name;
+
+      }
+
+    });
+
+  </script>
+
+</body>
+</html>
