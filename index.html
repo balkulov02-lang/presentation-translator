@@ -475,6 +475,92 @@ async function translateWord(word) {
     return;
   }
 
+  translationBox.style.display = "block";
+
+  translationWord.textContent = word;
+
+  translationResult.textContent =
+    "⏳ Аударылып жатыр...";
+
+  try {
+
+    const url =
+      "https://api.mymemory.translated.net/get?q=" +
+      encodeURIComponent(word) +
+      "&langpair=kk|en";
+
+    const response = await fetch(url);
+
+    const data = await response.json();
+
+    if (
+      data &&
+      data.responseData &&
+      data.responseData.translatedText
+    ) {
+
+      let result =
+        data.responseData.translatedText;
+
+      /*
+       Кейбір сөздерге API
+       транслитерация беріп жіберсе,
+       ең жиі қолданылатын сөздерді
+       өзіміз дұрыс аударамыз.
+      */
+
+      const dictionary = {
+
+        "тарих": "history",
+        "ғылым": "science",
+        "технология": "technology",
+        "технологиялар": "technologies",
+        "білім": "education",
+        "жаңа": "new",
+        "өмір": "life",
+        "өзгеріс": "change",
+        "өзгертті": "changed",
+        "ғасыр": "century",
+        "бірінші": "first",
+        "жартысы": "half",
+        "дүниежүзі": "world",
+        "мектеп": "school",
+        "мұғалім": "teacher",
+        "оқушы": "student"
+      };
+
+      const key =
+        word.toLowerCase();
+
+      if (dictionary[key]) {
+        result = dictionary[key];
+      }
+
+      translationResult.textContent =
+        "🇬🇧 " + result;
+
+    } else {
+
+      translationResult.textContent =
+        "Аударма табылмады.";
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    translationResult.textContent =
+      "❌ Аударма қызметіне қосылу мүмкін болмады.";
+
+  }
+
+} {
+
+  if (!word) {
+    return;
+  }
+
   translationBox.style.display =
     "block";
 
