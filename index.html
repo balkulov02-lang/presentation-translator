@@ -471,16 +471,42 @@ function cleanWord(word) {
 /* Аудару */
 async function translateWord(word) {
 
-  if (!word) {
-    return;
-  }
+  if (!word) return;
 
   translationBox.style.display = "block";
-
   translationWord.textContent = word;
+  translationResult.textContent = "⏳ Аударылып жатыр...";
 
-  translationResult.textContent =
-    "⏳ Аударылып жатыр...";
+  const dictionary = {
+    "тарих": "history",
+    "ғылым": "science",
+    "технология": "technology",
+    "технологиялар": "technologies",
+    "білім": "education",
+    "жаңа": "new",
+    "өмір": "life",
+    "өзгеріс": "change",
+    "өзгертті": "changed",
+    "ғасыр": "century",
+    "бірінші": "first",
+    "жартысы": "half",
+    "дүниежүзі": "world",
+    "мектеп": "school",
+    "мұғалім": "teacher",
+    "оқушы": "student"
+  };
+
+  const key = word
+    .toLowerCase()
+    .trim();
+
+  if (dictionary[key]) {
+
+    translationResult.textContent =
+      "🇬🇧 " + dictionary[key];
+
+    return;
+  }
 
   try {
 
@@ -490,7 +516,6 @@ async function translateWord(word) {
       "&langpair=kk|en";
 
     const response = await fetch(url);
-
     const data = await response.json();
 
     if (
@@ -499,45 +524,9 @@ async function translateWord(word) {
       data.responseData.translatedText
     ) {
 
-      let result =
-        data.responseData.translatedText;
-
-      /*
-       Кейбір сөздерге API
-       транслитерация беріп жіберсе,
-       ең жиі қолданылатын сөздерді
-       өзіміз дұрыс аударамыз.
-      */
-
-      const dictionary = {
-
-        "тарих": "history",
-        "ғылым": "science",
-        "технология": "technology",
-        "технологиялар": "technologies",
-        "білім": "education",
-        "жаңа": "new",
-        "өмір": "life",
-        "өзгеріс": "change",
-        "өзгертті": "changed",
-        "ғасыр": "century",
-        "бірінші": "first",
-        "жартысы": "half",
-        "дүниежүзі": "world",
-        "мектеп": "school",
-        "мұғалім": "teacher",
-        "оқушы": "student"
-      };
-
-      const key =
-        word.toLowerCase();
-
-      if (dictionary[key]) {
-        result = dictionary[key];
-      }
-
       translationResult.textContent =
-        "🇬🇧 " + result;
+        "🇬🇧 " +
+        data.responseData.translatedText;
 
     } else {
 
@@ -548,11 +537,11 @@ async function translateWord(word) {
 
   } catch (error) {
 
-    console.error(error);
-
     translationResult.textContent =
       "❌ Аударма қызметіне қосылу мүмкін болмады.";
 
+  }
+}
   }
 
 } {
