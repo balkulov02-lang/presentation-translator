@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Presentation Translator</title>
 
-  <!-- PPTX оқу үшін -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <style>
@@ -48,19 +46,16 @@
 
     .icon {
       font-size: 55px;
-      margin-bottom: 15px;
     }
 
     h2 {
       font-size: 30px;
-      margin: 10px 0;
     }
 
     .description {
       color: #6b7280;
       font-size: 17px;
       line-height: 1.6;
-      margin-bottom: 30px;
     }
 
     .upload-button {
@@ -72,10 +67,7 @@
       cursor: pointer;
       font-size: 17px;
       font-weight: bold;
-    }
-
-    .upload-button:hover {
-      background: #1d4ed8;
+      margin-top: 15px;
     }
 
     #fileInput {
@@ -93,44 +85,35 @@
       color: #6b7280;
     }
 
-    .presentation {
-      margin-top: 35px;
-    }
-
     .slide {
       background: white;
       border-radius: 18px;
       padding: 30px;
-      margin-bottom: 25px;
+      margin-top: 25px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.07);
       text-align: left;
     }
 
     .slide-title {
+      color: #2563eb;
       font-size: 20px;
       font-weight: bold;
       margin-bottom: 20px;
-      color: #2563eb;
     }
 
     .text-line {
-      margin: 10px 0;
-      line-height: 1.8;
       font-size: 18px;
+      line-height: 1.9;
     }
 
     .word {
-      display: inline-block;
-      margin: 2px;
-      padding: 2px 4px;
-      border-radius: 5px;
       cursor: pointer;
-      transition: 0.15s;
+      padding: 3px;
+      border-radius: 5px;
     }
 
     .word:hover {
       background: #dbeafe;
-      color: #1d4ed8;
     }
 
     .translation-box {
@@ -162,7 +145,6 @@
     .close-button {
       margin-top: 15px;
       border: none;
-      background: #e5e7eb;
       padding: 9px 18px;
       border-radius: 10px;
       cursor: pointer;
@@ -175,15 +157,6 @@
       border-radius: 14px;
       text-align: left;
       line-height: 1.6;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .error {
-      color: #dc2626;
-      margin-top: 20px;
     }
   </style>
 </head>
@@ -204,7 +177,7 @@
 
     <p class="description">
       PowerPoint презентациясын жүкте.<br>
-      Презентациядағы кез келген сөзді басып,
+      Презентациядағы сөзді басып,
       ағылшынша аудармасын көр.
     </p>
 
@@ -212,22 +185,18 @@
       📂 Презентация жүктеу
     </label>
 
-    <input
-      type="file"
-      id="fileInput"
-      accept=".pptx"
-    >
+    <input type="file" id="fileInput" accept=".pptx">
 
     <div id="fileName"></div>
 
     <div id="status" class="status"></div>
 
-    <div id="presentation" class="presentation"></div>
+    <div id="presentation"></div>
 
     <div class="info">
       💡 <strong>Қалай жұмыс істейді?</strong><br><br>
-      1. PowerPoint презентациясын жүктейсің.<br>
-      2. Слайдтағы мәтін автоматты түрде оқылады.<br>
+      1. PowerPoint жүктейсің.<br>
+      2. Слайдтағы мәтін оқылады.<br>
       3. Кез келген сөзді басасың.<br>
       4. Ағылшынша аудармасы шығады.
     </div>
@@ -236,14 +205,11 @@
 
 </main>
 
-<!-- Аударма терезесі -->
 <div id="translationBox" class="translation-box">
 
   <div id="translationWord" class="translation-word"></div>
 
-  <div id="translationResult" class="translation-result">
-    Аударылып жатыр...
-  </div>
+  <div id="translationResult" class="translation-result"></div>
 
   <button class="close-button" onclick="closeTranslation()">
     Жабу
@@ -262,13 +228,9 @@ const translationBox = document.getElementById("translationBox");
 const translationWord = document.getElementById("translationWord");
 const translationResult = document.getElementById("translationResult");
 
+fileInput.addEventListener("change", async function() {
 
-/* Файл таңдалғанда */
-fileInput.addEventListener("change", async function () {
-
-  if (!fileInput.files.length) {
-    return;
-  }
+  if (!fileInput.files.length) return;
 
   const file = fileInput.files[0];
 
@@ -285,7 +247,7 @@ fileInput.addEventListener("change", async function () {
     await readPowerPoint(file);
 
     statusBox.textContent =
-      "✅ Презентация дайын! Сөзді басып көр.";
+      "✅ Дайын! Сөзді басып көр.";
 
   } catch (error) {
 
@@ -298,75 +260,52 @@ fileInput.addEventListener("change", async function () {
 
 });
 
-
-/* PowerPoint оқу */
 async function readPowerPoint(file) {
 
   const arrayBuffer = await file.arrayBuffer();
 
   const zip = await JSZip.loadAsync(arrayBuffer);
 
-  const slideFiles = [];
+  const slides = [];
 
-  zip.forEach(function(relativePath, zipEntry) {
+  zip.forEach(function(path, entry) {
 
     const match =
-      relativePath.match(/^ppt\/slides\/slide(\d+)\.xml$/);
+      path.match(/^ppt\/slides\/slide(\d+)\.xml$/);
 
     if (match) {
 
-      slideFiles.push({
-        number: parseInt(match[1]),
-        entry: zipEntry
+      slides.push({
+        number: Number(match[1]),
+        entry: entry
       });
 
     }
 
   });
 
-  slideFiles.sort(function(a, b) {
-    return a.number - b.number;
-  });
+  slides.sort((a, b) => a.number - b.number);
 
-  if (slideFiles.length === 0) {
-
-    throw new Error(
-      "Слайдтар табылмады."
-    );
-
-  }
-
-  for (const slide of slideFiles) {
+  for (const slide of slides) {
 
     const xmlText =
       await slide.entry.async("text");
 
-    createSlide(
-      slide.number,
-      xmlText
-    );
+    createSlide(slide.number, xmlText);
 
   }
 
 }
 
-
-/* Слайд жасау */
 function createSlide(number, xmlText) {
 
-  const parser =
-    new DOMParser();
+  const parser = new DOMParser();
 
   const xml =
-    parser.parseFromString(
-      xmlText,
-      "application/xml"
-    );
+    parser.parseFromString(xmlText, "application/xml");
 
   const textNodes =
-    Array.from(
-      xml.getElementsByTagName("a:t")
-    );
+    Array.from(xml.getElementsByTagName("a:t"));
 
   const slide =
     document.createElement("div");
@@ -383,12 +322,10 @@ function createSlide(number, xmlText) {
 
   slide.appendChild(title);
 
-
   const line =
     document.createElement("div");
 
   line.className = "text-line";
-
 
   if (textNodes.length === 0) {
 
@@ -402,9 +339,7 @@ function createSlide(number, xmlText) {
       const text =
         node.textContent.trim();
 
-      if (!text) {
-        return;
-      }
+      if (!text) return;
 
       const words =
         text.split(/(\s+)/);
@@ -426,16 +361,13 @@ function createSlide(number, xmlText) {
 
           word.textContent = part;
 
-          word.addEventListener(
-            "click",
-            function() {
+          word.onclick = function() {
 
-              translateWord(
-                cleanWord(part)
-              );
+            translateWord(
+              cleanWord(part)
+            );
 
-            }
-          );
+          };
 
           line.appendChild(word);
 
@@ -457,8 +389,6 @@ function createSlide(number, xmlText) {
 
 }
 
-
-/* Сөздің тыныс белгілерін тазалау */
 function cleanWord(word) {
 
   return word
@@ -467,38 +397,33 @@ function cleanWord(word) {
 
 }
 
-
-/* Аудару */
 async function translateWord(word) {
 
   if (!word) return;
 
   translationBox.style.display = "block";
+
   translationWord.textContent = word;
-  translationResult.textContent = "⏳ Аударылып жатыр...";
 
   const dictionary = {
+
     "тарих": "history",
     "ғылым": "science",
     "технология": "technology",
     "технологиялар": "technologies",
     "білім": "education",
-    "жаңа": "new",
     "өмір": "life",
     "өзгеріс": "change",
-    "өзгертті": "changed",
-    "ғасыр": "century",
-    "бірінші": "first",
-    "жартысы": "half",
-    "дүниежүзі": "world",
     "мектеп": "school",
     "мұғалім": "teacher",
-    "оқушы": "student"
+    "оқушы": "student",
+    "ғасыр": "century",
+    "әлем": "world"
+
   };
 
-  const key = word
-    .toLowerCase()
-    .trim();
+  const key =
+    word.toLowerCase();
 
   if (dictionary[key]) {
 
@@ -508,65 +433,15 @@ async function translateWord(word) {
     return;
   }
 
-  try {
-
-    const url =
-      "https://api.mymemory.translated.net/get?q=" +
-      encodeURIComponent(word) +
-      "&langpair=kk|en";
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (
-      data &&
-      data.responseData &&
-      data.responseData.translatedText
-    ) {
-
-      translationResult.textContent =
-        "🇬🇧 " +
-        data.responseData.translatedText;
-
-    } else {
-
-      translationResult.textContent =
-        "Аударма табылмады.";
-
-    }
-
-  } catch (error) {
-
-    translationResult.textContent =
-      "❌ Аударма қызметіне қосылу мүмкін болмады.";
-
-  }
-}
-  }
-
-} {
-
-  if (!word) {
-    return;
-  }
-
-  translationBox.style.display =
-    "block";
-
-  translationWord.textContent =
-    word;
-
   translationResult.textContent =
     "⏳ Аударылып жатыр...";
 
-
   try {
 
     const url =
       "https://api.mymemory.translated.net/get?q=" +
       encodeURIComponent(word) +
       "&langpair=kk|en";
-
 
     const response =
       await fetch(url);
@@ -574,7 +449,6 @@ async function translateWord(word) {
     const data =
       await response.json();
 
-
     if (
       data &&
       data.responseData &&
@@ -594,21 +468,16 @@ async function translateWord(word) {
 
   } catch (error) {
 
-    console.error(error);
-
     translationResult.textContent =
-      "❌ Аударма қызметіне қосылу мүмкін болмады.";
+      "❌ Аударма қызметі қолжетімсіз.";
 
   }
 
 }
 
-
-/* Аударма терезесін жабу */
 function closeTranslation() {
 
-  translationBox.style.display =
-    "none";
+  translationBox.style.display = "none";
 
 }
 
