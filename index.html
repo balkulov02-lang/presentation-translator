@@ -6,6 +6,9 @@
 
   <title>Presentation Translator</title>
 
+  <!-- PPTX оқу үшін -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -30,26 +33,26 @@
     }
 
     main {
-      max-width: 1000px;
-      margin: 60px auto;
+      max-width: 1100px;
+      margin: 40px auto;
       padding: 20px;
     }
 
     .upload-box {
       background: white;
       border-radius: 24px;
-      padding: 70px 30px;
+      padding: 50px 30px;
       text-align: center;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.08);
     }
 
     .icon {
-      font-size: 60px;
-      margin-bottom: 20px;
+      font-size: 55px;
+      margin-bottom: 15px;
     }
 
     h2 {
-      font-size: 32px;
+      font-size: 30px;
       margin: 10px 0;
     }
 
@@ -57,14 +60,14 @@
       color: #6b7280;
       font-size: 17px;
       line-height: 1.6;
-      margin-bottom: 35px;
+      margin-bottom: 30px;
     }
 
     .upload-button {
       display: inline-block;
       background: #2563eb;
       color: white;
-      padding: 16px 32px;
+      padding: 16px 30px;
       border-radius: 12px;
       cursor: pointer;
       font-size: 17px;
@@ -85,78 +88,456 @@
       color: #2563eb;
     }
 
-    .info {
+    .status {
+      margin-top: 20px;
+      color: #6b7280;
+    }
+
+    .presentation {
       margin-top: 35px;
+    }
+
+    .slide {
+      background: white;
+      border-radius: 18px;
+      padding: 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+      text-align: left;
+    }
+
+    .slide-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #2563eb;
+    }
+
+    .text-line {
+      margin: 10px 0;
+      line-height: 1.8;
+      font-size: 18px;
+    }
+
+    .word {
+      display: inline-block;
+      margin: 2px;
+      padding: 2px 4px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .word:hover {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .translation-box {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      width: min(500px, 90%);
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .translation-word {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .translation-result {
+      font-size: 21px;
+      margin-top: 10px;
+    }
+
+    .close-button {
+      margin-top: 15px;
+      border: none;
+      background: #e5e7eb;
+      padding: 9px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .info {
+      margin-top: 30px;
       padding: 20px;
       background: #eff6ff;
       border-radius: 14px;
       text-align: left;
       line-height: 1.6;
     }
+
+    .hidden {
+      display: none;
+    }
+
+    .error {
+      color: #dc2626;
+      margin-top: 20px;
+    }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <h1>📚 Presentation Translator</h1>
-  </header>
+<header>
+  <h1>📚 Presentation Translator</h1>
+</header>
 
-  <main>
+<main>
 
-    <div class="upload-box">
+  <div class="upload-box">
 
-      <div class="icon">📊</div>
+    <div class="icon">📊</div>
 
-      <h2>Презентацияны аудар</h2>
+    <h2>Презентацияны аудар</h2>
 
-      <p class="description">
-        PowerPoint презентациясын жүкте.<br>
-        Презентациядағы сөздерді басып,
-        ағылшынша аудармасын көр.
-      </p>
+    <p class="description">
+      PowerPoint презентациясын жүкте.<br>
+      Презентациядағы кез келген сөзді басып,
+      ағылшынша аудармасын көр.
+    </p>
 
-      <label class="upload-button" for="fileInput">
-        📂 Презентация жүктеу
-      </label>
+    <label class="upload-button" for="fileInput">
+      📂 Презентация жүктеу
+    </label>
 
-      <input
-        type="file"
-        id="fileInput"
-        accept=".pptx"
-      >
+    <input
+      type="file"
+      id="fileInput"
+      accept=".pptx"
+    >
 
-      <div id="fileName"></div>
+    <div id="fileName"></div>
 
-      <div class="info">
-        💡 <strong>Біздің мақсат:</strong><br><br>
-        Презентацияны ашамыз → сөзді басамыз →
-        ағылшынша аудармасы бірден шығады.
-      </div>
+    <div id="status" class="status"></div>
 
+    <div id="presentation" class="presentation"></div>
+
+    <div class="info">
+      💡 <strong>Қалай жұмыс істейді?</strong><br><br>
+      1. PowerPoint презентациясын жүктейсің.<br>
+      2. Слайдтағы мәтін автоматты түрде оқылады.<br>
+      3. Кез келген сөзді басасың.<br>
+      4. Ағылшынша аудармасы шығады.
     </div>
 
-  </main>
+  </div>
 
-  <script>
+</main>
 
-    const fileInput = document.getElementById("fileInput");
-    const fileName = document.getElementById("fileName");
+<!-- Аударма терезесі -->
+<div id="translationBox" class="translation-box">
 
-    fileInput.addEventListener("change", function () {
+  <div id="translationWord" class="translation-word"></div>
 
-      if (fileInput.files.length > 0) {
+  <div id="translationResult" class="translation-result">
+    Аударылып жатыр...
+  </div>
 
-        const file = fileInput.files[0];
+  <button class="close-button" onclick="closeTranslation()">
+    Жабу
+  </button>
 
-        fileName.textContent =
-          "✅ Таңдалған файл: " + file.name;
+</div>
 
+<script>
+
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
+const statusBox = document.getElementById("status");
+const presentation = document.getElementById("presentation");
+
+const translationBox = document.getElementById("translationBox");
+const translationWord = document.getElementById("translationWord");
+const translationResult = document.getElementById("translationResult");
+
+
+/* Файл таңдалғанда */
+fileInput.addEventListener("change", async function () {
+
+  if (!fileInput.files.length) {
+    return;
+  }
+
+  const file = fileInput.files[0];
+
+  fileName.textContent =
+    "✅ Таңдалған файл: " + file.name;
+
+  presentation.innerHTML = "";
+
+  statusBox.textContent =
+    "⏳ Презентация оқылып жатыр...";
+
+  try {
+
+    await readPowerPoint(file);
+
+    statusBox.textContent =
+      "✅ Презентация дайын! Сөзді басып көр.";
+
+  } catch (error) {
+
+    console.error(error);
+
+    statusBox.textContent =
+      "❌ Презентацияны оқу кезінде қате болды.";
+
+  }
+
+});
+
+
+/* PowerPoint оқу */
+async function readPowerPoint(file) {
+
+  const arrayBuffer = await file.arrayBuffer();
+
+  const zip = await JSZip.loadAsync(arrayBuffer);
+
+  const slideFiles = [];
+
+  zip.forEach(function(relativePath, zipEntry) {
+
+    const match =
+      relativePath.match(/^ppt\/slides\/slide(\d+)\.xml$/);
+
+    if (match) {
+
+      slideFiles.push({
+        number: parseInt(match[1]),
+        entry: zipEntry
+      });
+
+    }
+
+  });
+
+  slideFiles.sort(function(a, b) {
+    return a.number - b.number;
+  });
+
+  if (slideFiles.length === 0) {
+
+    throw new Error(
+      "Слайдтар табылмады."
+    );
+
+  }
+
+  for (const slide of slideFiles) {
+
+    const xmlText =
+      await slide.entry.async("text");
+
+    createSlide(
+      slide.number,
+      xmlText
+    );
+
+  }
+
+}
+
+
+/* Слайд жасау */
+function createSlide(number, xmlText) {
+
+  const parser =
+    new DOMParser();
+
+  const xml =
+    parser.parseFromString(
+      xmlText,
+      "application/xml"
+    );
+
+  const textNodes =
+    Array.from(
+      xml.getElementsByTagName("a:t")
+    );
+
+  const slide =
+    document.createElement("div");
+
+  slide.className = "slide";
+
+  const title =
+    document.createElement("div");
+
+  title.className = "slide-title";
+
+  title.textContent =
+    "Слайд " + number;
+
+  slide.appendChild(title);
+
+
+  const line =
+    document.createElement("div");
+
+  line.className = "text-line";
+
+
+  if (textNodes.length === 0) {
+
+    line.textContent =
+      "Бұл слайдта мәтін жоқ.";
+
+  } else {
+
+    textNodes.forEach(function(node) {
+
+      const text =
+        node.textContent.trim();
+
+      if (!text) {
+        return;
       }
+
+      const words =
+        text.split(/(\s+)/);
+
+      words.forEach(function(part) {
+
+        if (/^\s+$/.test(part)) {
+
+          line.appendChild(
+            document.createTextNode(part)
+          );
+
+        } else {
+
+          const word =
+            document.createElement("span");
+
+          word.className = "word";
+
+          word.textContent = part;
+
+          word.addEventListener(
+            "click",
+            function() {
+
+              translateWord(
+                cleanWord(part)
+              );
+
+            }
+          );
+
+          line.appendChild(word);
+
+        }
+
+      });
+
+      line.appendChild(
+        document.createElement("br")
+      );
 
     });
 
-  </script>
+  }
+
+  slide.appendChild(line);
+
+  presentation.appendChild(slide);
+
+}
+
+
+/* Сөздің тыныс белгілерін тазалау */
+function cleanWord(word) {
+
+  return word
+    .replace(/[.,!?;:"“”«»()[\]{}]/g, "")
+    .trim();
+
+}
+
+
+/* Аудару */
+async function translateWord(word) {
+
+  if (!word) {
+    return;
+  }
+
+  translationBox.style.display =
+    "block";
+
+  translationWord.textContent =
+    word;
+
+  translationResult.textContent =
+    "⏳ Аударылып жатыр...";
+
+
+  try {
+
+    const url =
+      "https://api.mymemory.translated.net/get?q=" +
+      encodeURIComponent(word) +
+      "&langpair=kk|en";
+
+
+    const response =
+      await fetch(url);
+
+    const data =
+      await response.json();
+
+
+    if (
+      data &&
+      data.responseData &&
+      data.responseData.translatedText
+    ) {
+
+      translationResult.textContent =
+        "🇬🇧 " +
+        data.responseData.translatedText;
+
+    } else {
+
+      translationResult.textContent =
+        "Аударма табылмады.";
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    translationResult.textContent =
+      "❌ Аударма қызметіне қосылу мүмкін болмады.";
+
+  }
+
+}
+
+
+/* Аударма терезесін жабу */
+function closeTranslation() {
+
+  translationBox.style.display =
+    "none";
+
+}
+
+</script>
 
 </body>
 </html>
