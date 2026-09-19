@@ -303,52 +303,45 @@ async function readPowerPoint(file) {
 }
 
 function createSlide(number, xmlText) {
-function createSlide(number, xmlText) {
 
   const parser = new DOMParser();
 
-  const xml =
-    parser.parseFromString(xmlText, "application/xml");
-
+  const xml = parser.parseFromString(
+    xmlText,
+    "application/xml"
+  );
   const textNodes =
     Array.from(xml.getElementsByTagName("a:t"));
 
-  const slide =
-    document.createElement("div");
+  const slide = document.createElement("div");
 
   slide.className = "slide";
 
-  const title =
-    document.createElement("div");
+  const title = document.createElement("div");
 
   title.className = "slide-title";
 
-  title.textContent =
-    "Слайд " + number;
+  title.textContent = "Слайд " + number;
 
   slide.appendChild(title);
 
-  const line =
-    document.createElement("div");
+  const line = document.createElement("div");
 
   line.className = "text-line";
 
   if (textNodes.length === 0) {
 
-    line.textContent =
-      "Бұл слайдта мәтін жоқ.";
+    line.textContent = "Бұл слайдта мәтін жоқ.";
 
   } else {
 
     textNodes.forEach(function(node) {
 
-      const text =
-        node.textContent.trim();
+      const text = node.textContent.trim();
 
       if (!text) return;
 
-      const words =
-        text.split(/(\s+)/);
+      const words = text.split(/(\s+)/);
 
       words.forEach(function(part) {
 
@@ -360,8 +353,7 @@ function createSlide(number, xmlText) {
 
         } else {
 
-          const word =
-            document.createElement("span");
+          const word = document.createElement("span");
 
           word.className = "word";
 
@@ -369,9 +361,7 @@ function createSlide(number, xmlText) {
 
           word.onclick = function() {
 
-            translateWord(
-              cleanWord(part)
-            );
+            translateWord(cleanWord(part));
 
           };
 
@@ -392,9 +382,7 @@ function createSlide(number, xmlText) {
   slide.appendChild(line);
 
   presentation.appendChild(slide);
-
 }
-
 function cleanWord(word) {
 
   return word
