@@ -1,1590 +1,809 @@
 <!DOCTYPE html>
 <html lang="kk">
-
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta charset="UTF-8">
+<title>GB History — Presentation Translator</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
-  <title>GB History — Presentation Translator</title>
+<style>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+* {
+    box-sizing: border-box;
+}
 
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #eef3f9;
+    color: #172033;
+}
 
-  <style>
+/* HEADER */
 
-    * {
-      box-sizing: border-box;
+.header {
+    background: linear-gradient(135deg, #0d47a1, #1976d2);
+    color: white;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 12px rgba(0,0,0,.18);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+}
+
+.logo-title {
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.logo-subtitle {
+    font-size: 12px;
+    opacity: .8;
+}
+
+/* MAIN */
+
+.main {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 25px;
+}
+
+/* UPLOAD */
+
+.upload-card {
+    background: white;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 6px 25px rgba(0,0,0,.08);
+    margin-bottom: 22px;
+}
+
+.upload-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+.upload-description {
+    color: #687386;
+    margin-bottom: 18px;
+}
+
+.file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #1565c0;
+    color: white;
+    padding: 13px 20px;
+    border-radius: 11px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: .2s;
+}
+
+.file-label:hover {
+    background: #0d47a1;
+    transform: translateY(-1px);
+}
+
+#fileInput {
+    display: none;
+}
+
+.file-name {
+    margin-top: 13px;
+    color: #5d6879;
+    font-size: 14px;
+}
+
+/* WORKSPACE */
+
+.workspace {
+    display: grid;
+    grid-template-columns: 190px minmax(500px, 1fr) 300px;
+    gap: 18px;
+    align-items: start;
+}
+
+/* THUMBNAILS */
+
+.thumbnails-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 6px 25px rgba(0,0,0,.08);
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+}
+
+.panel-title {
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+.thumbnail {
+    position: relative;
+    background: #f3f6fa;
+    border: 2px solid transparent;
+    border-radius: 9px;
+    padding: 4px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.thumbnail:hover {
+    border-color: #90caf9;
+}
+
+.thumbnail.active {
+    border-color: #1565c0;
+}
+
+.thumbnail-number {
+    position: absolute;
+    left: 6px;
+    bottom: 5px;
+    background: rgba(0,0,0,.65);
+    color: white;
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+.thumbnail-preview {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: white;
+    overflow: hidden;
+    border-radius: 6px;
+}
+
+/* SLIDE AREA */
+
+.presentation-panel {
+    background: #dce3ec;
+    border-radius: 18px;
+    padding: 20px;
+    min-height: 650px;
+    box-shadow: 0 6px 25px rgba(0,0,0,.08);
+}
+
+.presentation-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.slide-counter {
+    font-weight: 700;
+    color: #435066;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-btn {
+    border: 0;
+    background: white;
+    border-radius: 9px;
+    padding: 8px 13px;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 2px 7px rgba(0,0,0,.08);
+}
+
+.nav-btn:hover {
+    background: #e9f2ff;
+}
+
+/* REAL SLIDE */
+
+.slide-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.slide-canvas {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    aspect-ratio: 16 / 9;
+    background: white;
+    overflow: hidden;
+    border-radius: 5px;
+    box-shadow: 0 12px 35px rgba(0,0,0,.22);
+}
+
+/* TEXT ON SLIDE */
+
+.slide-text-box {
+    position: absolute;
+    overflow: hidden;
+    white-space: normal;
+}
+
+.slide-word {
+    cursor: pointer;
+    display: inline;
+    border-radius: 3px;
+    transition: .15s;
+}
+
+.slide-word:hover {
+    background: rgba(33,150,243,.18);
+}
+
+.slide-word.selected {
+    background: #ffeb3b;
+    color: #111;
+}
+
+/* IMAGES */
+
+.slide-image {
+    position: absolute;
+    object-fit: fill;
+    pointer-events: none;
+}
+
+/* TRANSLATION */
+
+.translation-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 25px rgba(0,0,0,.08);
+    min-height: 250px;
+}
+
+.translation-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.selected-word-label {
+    color: #778195;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.selected-word {
+    font-size: 23px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #1565c0;
+    min-height: 30px;
+}
+
+.translation-result {
+    background: #f1f7ff;
+    border-left: 4px solid #1976d2;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 19px;
+    font-weight: 600;
+    min-height: 52px;
+    margin-bottom: 15px;
+}
+
+.speak-btn {
+    width: 100%;
+    border: none;
+    background: #1565c0;
+    color: white;
+    padding: 12px;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.speak-btn:hover {
+    background: #0d47a1;
+}
+
+.help {
+    color: #758095;
+    font-size: 12px;
+    margin-top: 15px;
+    line-height: 1.5;
+}
+
+/* EMPTY */
+
+.empty {
+    width: 100%;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #758095;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+/* LOADING */
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #506078;
+}
+
+.spinner {
+    width: 35px;
+    height: 35px;
+    border: 4px solid #d5e1f0;
+    border-top-color: #1565c0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 12px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
+}
 
+/* RESPONSIVE */
 
-    body {
-
-      margin: 0;
-
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      background:
-        linear-gradient(
-          135deg,
-          #eef2ff,
-          #f8fafc
-        );
-
-      color: #172033;
-
-      min-height: 100vh;
-
-    }
-
-
-    /* =========================
-       HEADER
-    ========================= */
-
-    header {
-
-      height: 72px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #172554,
-          #1e3a8a
-        );
-
-      color: white;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: space-between;
-
-      padding: 0 35px;
-
-      box-shadow:
-        0 4px 20px
-        rgba(15, 23, 42, 0.15);
-
-    }
-
-
-    .brand {
-
-      display: flex;
-
-      align-items: center;
-
-      gap: 13px;
-
-    }
-
-
-    .brand-icon {
-
-      width: 42px;
-
-      height: 42px;
-
-      background: rgba(255,255,255,0.14);
-
-      border-radius: 12px;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      font-size: 22px;
-
-    }
-
-
-    .brand-title {
-
-      font-size: 21px;
-
-      font-weight: 700;
-
-    }
-
-
-    .brand-subtitle {
-
-      font-size: 12px;
-
-      opacity: 0.7;
-
-      margin-top: 3px;
-
-    }
-
-
-    .header-badge {
-
-      background:
-        rgba(255,255,255,0.12);
-
-      padding: 8px 14px;
-
-      border-radius: 20px;
-
-      font-size: 13px;
-
-    }
-
-
-    /* =========================
-       MAIN
-    ========================= */
-
-    .container {
-
-      width: 100%;
-
-      max-width: 1400px;
-
-      margin: auto;
-
-      padding: 30px;
-
-    }
-
-
-    /* =========================
-       UPLOAD
-    ========================= */
-
-    .upload-box {
-
-      background: white;
-
-      border-radius: 22px;
-
-      padding: 28px;
-
-      text-align: center;
-
-      box-shadow:
-        0 10px 35px
-        rgba(15, 23, 42, 0.08);
-
-      border:
-        1px solid #e5e7eb;
-
-      margin-bottom: 25px;
-
-    }
-
-
-    .upload-icon {
-
-      width: 60px;
-
-      height: 60px;
-
-      border-radius: 17px;
-
-      background: #eff6ff;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      margin:
-        0 auto 14px;
-
-      font-size: 29px;
-
-    }
-
-
-    .upload-box h2 {
-
-      margin:
-        0 0 8px;
-
-      font-size: 25px;
-
-      color: #172554;
-
-    }
-
-
-    .upload-description {
-
-      color: #64748b;
-
-      margin:
-        0 0 18px;
-
-    }
-
-
-    #fileInput {
-
-      display: none;
-
-    }
-
-
-    .upload-button {
-
-      display: inline-flex;
-
-      align-items: center;
-
-      gap: 8px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #2563eb,
-          #1d4ed8
-        );
-
-      color: white;
-
-      padding:
-        13px 23px;
-
-      border-radius: 11px;
-
-      cursor: pointer;
-
-      font-weight: 600;
-
-      transition: 0.2s;
-
-      box-shadow:
-        0 6px 15px
-        rgba(37,99,235,0.2);
-
-    }
-
-
-    .upload-button:hover {
-
-      transform:
-        translateY(-1px);
-
-      box-shadow:
-        0 8px 20px
-        rgba(37,99,235,0.3);
-
-    }
-
-
-    #status {
-
-      margin-top: 15px;
-
-      font-size: 14px;
-
-      color: #64748b;
-
-    }
-
-
-    .loading {
-
-      display: none;
-
-      margin-top: 15px;
-
-      color: #2563eb;
-
-      font-weight: 600;
-
-    }
-
-
-    .error {
-
-      color: #dc2626;
-
-      font-weight: 600;
-
-    }
-
-
-    /* =========================
-       WORKSPACE
-    ========================= */
+@media(max-width: 1100px) {
 
     .workspace {
-
-      display: none;
-
-      grid-template-columns:
-        minmax(0, 1fr)
-        320px;
-
-      gap: 22px;
-
-      align-items: start;
-
+        grid-template-columns: 150px 1fr;
     }
-
-
-    /* =========================
-       PRESENTATION
-    ========================= */
-
-    .presentation-area {
-
-      background:
-        rgba(255,255,255,0.72);
-
-      border:
-        1px solid #e2e8f0;
-
-      border-radius: 22px;
-
-      padding: 22px;
-
-      box-shadow:
-        0 10px 35px
-        rgba(15,23,42,0.07);
-
-      backdrop-filter:
-        blur(10px);
-
-    }
-
-
-    .slide-counter-top {
-
-      display: flex;
-
-      justify-content: space-between;
-
-      align-items: center;
-
-      margin-bottom: 15px;
-
-      color: #64748b;
-
-      font-size: 13px;
-
-    }
-
-
-    .slide-counter-label {
-
-      background: #eff6ff;
-
-      color: #1d4ed8;
-
-      padding:
-        6px 10px;
-
-      border-radius: 8px;
-
-      font-weight: 600;
-
-    }
-
-
-    .slide {
-
-      width: 100%;
-
-      max-width: 1100px;
-
-      aspect-ratio: 16 / 9;
-
-      background: white;
-
-      margin: auto;
-
-      border-radius: 12px;
-
-      box-shadow:
-        0 12px 35px
-        rgba(15,23,42,0.15);
-
-      position: relative;
-
-      overflow: hidden;
-
-      padding: 55px 65px;
-
-    }
-
-
-    .slide::before {
-
-      content: "";
-
-      position: absolute;
-
-      top: 0;
-
-      left: 0;
-
-      width: 7px;
-
-      height: 100%;
-
-      background:
-        linear-gradient(
-          #2563eb,
-          #172554
-        );
-
-    }
-
-
-    .slide-title {
-
-      font-size: clamp(
-        22px,
-        3vw,
-        36px
-      );
-
-      font-weight: 700;
-
-      color: #172554;
-
-      margin-bottom: 30px;
-
-      line-height: 1.2;
-
-    }
-
-
-    .slide-content {
-
-      font-size: clamp(
-        16px,
-        2vw,
-        23px
-      );
-
-      line-height: 1.65;
-
-      color: #334155;
-
-      overflow-y: auto;
-
-      max-height: 70%;
-
-    }
-
-
-    .slide-content::-webkit-scrollbar {
-
-      width: 5px;
-
-    }
-
-
-    .slide-content::-webkit-scrollbar-thumb {
-
-      background: #cbd5e1;
-
-      border-radius: 10px;
-
-    }
-
-
-    /* =========================
-       WORD
-    ========================= */
-
-    .word {
-
-      cursor: pointer;
-
-      display: inline;
-
-      border-radius: 5px;
-
-      padding:
-        2px 3px;
-
-      transition:
-        background 0.15s,
-        color 0.15s;
-
-    }
-
-
-    .word:hover {
-
-      background: #dbeafe;
-
-      color: #1d4ed8;
-
-    }
-
-
-    .word.selected {
-
-      background: #2563eb;
-
-      color: white;
-
-    }
-
-
-    /* =========================
-       CONTROLS
-    ========================= */
-
-    .controls {
-
-      display: flex;
-
-      justify-content: center;
-
-      align-items: center;
-
-      gap: 12px;
-
-      margin-top: 18px;
-
-    }
-
-
-    .controls button {
-
-      border: none;
-
-      background: #172554;
-
-      color: white;
-
-      padding:
-        10px 18px;
-
-      border-radius: 9px;
-
-      cursor: pointer;
-
-      font-size: 14px;
-
-      font-weight: 600;
-
-      transition: 0.2s;
-
-    }
-
-
-    .controls button:hover {
-
-      background: #1e40af;
-
-      transform:
-        translateY(-1px);
-
-    }
-
-
-    .controls button:disabled {
-
-      opacity: 0.4;
-
-      cursor: not-allowed;
-
-      transform: none;
-
-    }
-
-
-    #slideNumber {
-
-      min-width: 65px;
-
-      text-align: center;
-
-      font-weight: 700;
-
-      color: #475569;
-
-    }
-
-
-    /* =========================
-       THUMBNAILS
-    ========================= */
-
-    .slide-list {
-
-      display: flex;
-
-      gap: 10px;
-
-      overflow-x: auto;
-
-      padding:
-        18px 5px 5px;
-
-    }
-
-
-    .slide-list::-webkit-scrollbar {
-
-      height: 6px;
-
-    }
-
-
-    .slide-list::-webkit-scrollbar-thumb {
-
-      background: #cbd5e1;
-
-      border-radius: 10px;
-
-    }
-
-
-    .slide-thumb {
-
-      min-width: 130px;
-
-      height: 78px;
-
-      background: white;
-
-      border:
-        2px solid #e2e8f0;
-
-      border-radius: 9px;
-
-      cursor: pointer;
-
-      padding: 8px;
-
-      overflow: hidden;
-
-      font-size: 11px;
-
-      color: #475569;
-
-      transition: 0.2s;
-
-    }
-
-
-    .slide-thumb:hover {
-
-      border-color: #93c5fd;
-
-      transform:
-        translateY(-2px);
-
-    }
-
-
-    .slide-thumb.active {
-
-      border-color: #2563eb;
-
-      box-shadow:
-        0 0 0 2px
-        rgba(37,99,235,0.12);
-
-      color: #1d4ed8;
-
-      font-weight: 700;
-
-    }
-
-
-    /* =========================
-       TRANSLATION PANEL
-    ========================= */
 
     .translation-panel {
-
-      background: white;
-
-      border-radius: 22px;
-
-      padding: 22px;
-
-      box-shadow:
-        0 10px 35px
-        rgba(15,23,42,0.08);
-
-      border:
-        1px solid #e5e7eb;
-
-      position: sticky;
-
-      top: 20px;
-
+        grid-column: 1 / -1;
     }
 
+}
 
-    .translation-header {
+@media(max-width: 750px) {
 
-      display: flex;
-
-      align-items: center;
-
-      gap: 10px;
-
-      padding-bottom: 15px;
-
-      border-bottom:
-        1px solid #e5e7eb;
-
-    }
-
-
-    .translation-header-icon {
-
-      width: 40px;
-
-      height: 40px;
-
-      border-radius: 11px;
-
-      background: #eff6ff;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      font-size: 20px;
-
-    }
-
-
-    .translation-header h3 {
-
-      margin: 0;
-
-      color: #172554;
-
-      font-size: 19px;
-
-    }
-
-
-    .translation-header span {
-
-      display: block;
-
-      font-size: 11px;
-
-      color: #94a3b8;
-
-      margin-top: 2px;
-
-    }
-
-
-    .language-label {
-
-      font-size: 11px;
-
-      text-transform: uppercase;
-
-      letter-spacing: 0.5px;
-
-      color: #94a3b8;
-
-      margin-top: 22px;
-
-      margin-bottom: 6px;
-
-    }
-
-
-    .selected-word {
-
-      font-size: 27px;
-
-      font-weight: 700;
-
-      color: #172554;
-
-      min-height: 38px;
-
-      word-break: break-word;
-
-    }
-
-
-    .translation-arrow {
-
-      text-align: center;
-
-      color: #94a3b8;
-
-      font-size: 18px;
-
-      margin:
-        10px 0;
-
-    }
-
-
-    .translation {
-
-      background:
-        linear-gradient(
-          135deg,
-          #eff6ff,
-          #f8fafc
-        );
-
-      border:
-        1px solid #dbeafe;
-
-      border-radius: 13px;
-
-      padding: 17px;
-
-      min-height: 75px;
-
-      font-size: 23px;
-
-      font-weight: 600;
-
-      color: #1d4ed8;
-
-      word-break: break-word;
-
-      display: flex;
-
-      align-items: center;
-
-    }
-
-
-    .translation.loading-text {
-
-      font-size: 14px;
-
-      color: #64748b;
-
-      font-weight: normal;
-
-    }
-
-
-    .speak-button {
-
-      width: 100%;
-
-      margin-top: 15px;
-
-      padding: 13px;
-
-      border: none;
-
-      border-radius: 11px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #16a34a,
-          #15803d
-        );
-
-      color: white;
-
-      font-size: 15px;
-
-      font-weight: 600;
-
-      cursor: pointer;
-
-      transition: 0.2s;
-
-    }
-
-
-    .speak-button:hover {
-
-      transform:
-        translateY(-1px);
-
-      box-shadow:
-        0 6px 15px
-        rgba(22,163,74,0.2);
-
-    }
-
-
-    .speak-button:disabled {
-
-      opacity: 0.45;
-
-      cursor: not-allowed;
-
-      transform: none;
-
-    }
-
-
-    .translation-tip {
-
-      margin-top: 18px;
-
-      padding: 12px;
-
-      background: #f8fafc;
-
-      border-radius: 10px;
-
-      color: #64748b;
-
-      font-size: 12px;
-
-      line-height: 1.5;
-
-    }
-
-
-    /* =========================
-       MOBILE
-    ========================= */
-
-    @media (max-width: 900px) {
-
-      header {
-
-        padding:
-          0 18px;
-
-      }
-
-
-      .header-badge {
-
-        display: none;
-
-      }
-
-
-      .container {
-
-        padding: 15px;
-
-      }
-
-
-      .workspace {
-
+    .workspace {
         grid-template-columns: 1fr;
-
-      }
-
-
-      .translation-panel {
-
-        position: static;
-
-      }
-
-
-      .slide {
-
-        padding:
-          35px 40px;
-
-      }
-
     }
 
-
-    @media (max-width: 600px) {
-
-      .slide {
-
-        padding:
-          25px 30px;
-
-      }
-
-
-      .slide-content {
-
-        max-height: 65%;
-
-      }
-
-
-      .slide-thumb {
-
-        min-width: 105px;
-
-        height: 65px;
-
-      }
-
+    .thumbnails-panel {
+        max-height: 180px;
     }
 
-  </style>
+    .presentation-panel {
+        padding: 10px;
+    }
 
+    .main {
+        padding: 12px;
+    }
+
+}
+
+</style>
 </head>
-
 
 <body>
 
+<header class="header">
 
-  <!-- =========================
-       HEADER
-  ========================== -->
+    <div class="logo">
 
-  <header>
-
-    <div class="brand">
-
-      <div class="brand-icon">
-        📚
-      </div>
-
-      <div>
-
-        <div class="brand-title">
-          GB History
+        <div class="logo-icon">
+            📚
         </div>
 
-        <div class="brand-subtitle">
-          Presentation Translator
+        <div>
+            <div class="logo-title">
+                GB History
+            </div>
+
+            <div class="logo-subtitle">
+                Presentation Translator
+            </div>
         </div>
 
-      </div>
-
     </div>
 
-
-    <div class="header-badge">
-      Қазақша → English
+    <div>
+        🇰🇿 → 🇬🇧
     </div>
 
-  </header>
+</header>
 
 
+<main class="main">
 
-  <div class="container">
+    <section class="upload-card">
 
+        <div class="upload-title">
+            📂 Презентацияны жүктеу
+        </div>
 
-    <!-- =========================
-         UPLOAD
-    ========================== -->
+        <div class="upload-description">
+            PowerPoint (.pptx) файлын таңдаңыз
+        </div>
 
-    <div class="upload-box">
+        <label class="file-label">
 
-      <div class="upload-icon">
-        📊
-      </div>
+            📎 PPTX таңдау
 
-
-      <h2>
-        Презентацияны жүктеу
-      </h2>
-
-
-      <p class="upload-description">
-        PowerPoint презентациясын таңдаңыз (.pptx)
-      </p>
-
-
-      <label
-        for="fileInput"
-        class="upload-button"
-      >
-
-        📂
-        Презентация таңдау
-
-      </label>
-
-
-      <input
-        type="file"
-        id="fileInput"
-        accept=".pptx"
-      >
-
-
-      <div id="status">
-        Файл таңдалмаған
-      </div>
-
-
-      <div
-        id="loading"
-        class="loading"
-      >
-        ⏳ Презентация оқылуда...
-      </div>
-
-    </div>
-
-
-
-    <!-- =========================
-         WORKSPACE
-    ========================== -->
-
-    <div
-      id="workspace"
-      class="workspace"
-    >
-
-
-      <!-- PRESENTATION -->
-
-      <div>
-
-        <div class="presentation-area">
-
-
-          <div class="slide-counter-top">
-
-            <span>
-              📖 Презентация
-            </span>
-
-            <span
-              id="slideCounterLabel"
-              class="slide-counter-label"
+            <input
+                id="fileInput"
+                type="file"
+                accept=".pptx"
             >
-              1-слайд
-            </span>
 
-          </div>
+        </label>
+
+        <div
+            id="fileName"
+            class="file-name"
+        >
+            Файл таңдалмаған
+        </div>
+
+    </section>
 
 
-          <div
-            id="slide"
-            class="slide"
-          >
+    <section class="workspace">
 
-            <div
-              id="slideTitle"
-              class="slide-title"
-            >
-              Презентация жүктелмеді
+        <!-- THUMBNAILS -->
+
+        <aside class="thumbnails-panel">
+
+            <div class="panel-title">
+                Слайдтар
+            </div>
+
+            <div id="thumbnails">
+
+                <div class="empty">
+                    <div>
+                        Презентация<br>
+                        жүктелмеді
+                    </div>
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- PRESENTATION -->
+
+        <section class="presentation-panel">
+
+            <div class="presentation-top">
+
+                <div
+                    id="slideCounter"
+                    class="slide-counter"
+                >
+                    Слайд жоқ
+                </div>
+
+                <div class="nav-buttons">
+
+                    <button
+                        id="prevBtn"
+                        class="nav-btn"
+                    >
+                        ◀
+                    </button>
+
+                    <button
+                        id="nextBtn"
+                        class="nav-btn"
+                    >
+                        ▶
+                    </button>
+
+                </div>
+
             </div>
 
 
-            <div
-              id="slideContent"
-              class="slide-content"
-            >
-              PowerPoint файлын жүктеңіз.
+            <div id="presentation">
+
+                <div class="empty">
+
+                    <div>
+
+                        <div class="empty-icon">
+                            📊
+                        </div>
+
+                        <div>
+                            PowerPoint презентацияңызды
+                            жүктеңіз
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
-          </div>
+        </section>
 
 
+        <!-- TRANSLATION -->
 
-          <!-- CONTROLS -->
+        <aside class="translation-panel">
 
-          <div class="controls">
+            <div class="translation-title">
+                🌐 Аударма
+            </div>
 
-            <button id="prevBtn">
-              ← Алдыңғы
+            <div class="selected-word-label">
+                Таңдалған сөз
+            </div>
+
+            <div
+                id="selectedWord"
+                class="selected-word"
+            >
+                —
+            </div>
+
+            <div
+                id="translation"
+                class="translation-result"
+            >
+                Слайдтағы сөзді басыңыз
+            </div>
+
+            <button
+                id="speakBtn"
+                class="speak-btn"
+            >
+                🔊 Ағылшынша оқу
             </button>
 
+            <div class="help">
+                💡 Слайдтағы кез келген сөзді
+                бассаңыз, оның ағылшынша
+                аудармасы осы жерде шығады.
+            </div>
 
-            <span id="slideNumber">
-              0 / 0
-            </span>
+        </aside>
 
+    </section>
 
-            <button id="nextBtn">
-              Келесі →
-            </button>
-
-          </div>
-
-
-
-          <!-- THUMBNAILS -->
-
-          <div
-            id="slideList"
-            class="slide-list"
-          ></div>
-
-
-        </div>
-
-      </div>
-
-
-
-      <!-- TRANSLATION -->
-
-      <div class="translation-panel">
-
-
-        <div class="translation-header">
-
-          <div class="translation-header-icon">
-            🌍
-          </div>
-
-          <div>
-
-            <h3>
-              Аударма
-            </h3>
-
-            <span>
-              Қазақша → English
-            </span>
-
-          </div>
-
-        </div>
-
-
-
-        <div class="language-label">
-          Қазақша сөз
-        </div>
-
-
-        <div
-          id="selectedWord"
-          class="selected-word"
-        >
-          Сөзді басыңыз
-        </div>
-
-
-
-        <div class="translation-arrow">
-          ↓
-        </div>
-
-
-
-        <div class="language-label">
-          English translation
-        </div>
-
-
-        <div
-          id="translation"
-          class="translation"
-        >
-          Презентациядағы кез келген сөзді басыңыз.
-        </div>
-
-
-
-        <button
-          id="speakBtn"
-          class="speak-button"
-          disabled
-        >
-          🔊 Ағылшынша тыңдау
-        </button>
-
-
-
-        <div class="translation-tip">
-
-          💡
-          <strong>Кеңес:</strong>
-          Слайдтағы кез келген сөзді басыңыз.
-          Оның ағылшынша аудармасы осы жерде шығады.
-
-        </div>
-
-
-      </div>
-
-
-    </div>
-
-
-  </div>
-
+</main>
 
 
 <script>
 
+/* =========================================
+   GLOBAL VARIABLES
+========================================= */
 
-  /* =========================
-     VARIABLES
-  ========================== */
+let slides = [];
+let currentSlide = 0;
 
-  let slides = [];
+let translationCache = {};
 
-  let currentSlide = 0;
+let selectedWordElement = null;
 
-  let selectedWord = "";
-
-  const translationCache = {};
-
-
-
-  /* =========================
-     ELEMENTS
-  ========================== */
-
-  const fileInput =
-    document.getElementById(
-      "fileInput"
-    );
+let slideWidthEMU = 12192000;
+let slideHeightEMU = 6858000;
 
 
-  const status =
-    document.getElementById(
-      "status"
-    );
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const fileName =
+    document.getElementById("fileName");
+
+const thumbnails =
+    document.getElementById("thumbnails");
+
+const presentation =
+    document.getElementById("presentation");
+
+const slideCounter =
+    document.getElementById("slideCounter");
+
+const selectedWord =
+    document.getElementById("selectedWord");
+
+const translation =
+    document.getElementById("translation");
+
+const speakBtn =
+    document.getElementById("speakBtn");
+
+const prevBtn =
+    document.getElementById("prevBtn");
+
+const nextBtn =
+    document.getElementById("nextBtn");
 
 
-  const loading =
-    document.getElementById(
-      "loading"
-    );
+/* =========================================
+   FILE UPLOAD
+========================================= */
 
-
-  const workspace =
-    document.getElementById(
-      "workspace"
-    );
-
-
-  const slideTitle =
-    document.getElementById(
-      "slideTitle"
-    );
-
-
-  const slideContent =
-    document.getElementById(
-      "slideContent"
-    );
-
-
-  const slideNumber =
-    document.getElementById(
-      "slideNumber"
-    );
-
-
-  const slideCounterLabel =
-    document.getElementById(
-      "slideCounterLabel"
-    );
-
-
-  const slideList =
-    document.getElementById(
-      "slideList"
-    );
-
-
-  const selectedWordElement =
-    document.getElementById(
-      "selectedWord"
-    );
-
-
-  const translationElement =
-    document.getElementById(
-      "translation"
-    );
-
-
-  const prevBtn =
-    document.getElementById(
-      "prevBtn"
-    );
-
-
-  const nextBtn =
-    document.getElementById(
-      "nextBtn"
-    );
-
-
-  const speakBtn =
-    document.getElementById(
-      "speakBtn"
-    );
-
-
-
-  /* =========================
-     FILE UPLOAD
-  ========================== */
-
-  fileInput.addEventListener(
+fileInput.addEventListener(
     "change",
-    async function(event) {
+    async function() {
 
-      const file =
-        event.target.files[0];
+        const file = this.files[0];
 
+        if (!file) {
+            return;
+        }
 
-      if (!file) {
-        return;
-      }
+        fileName.textContent =
+            "📄 " + file.name;
 
+        presentation.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                Презентация оқылып жатыр...
+            </div>
+        `;
 
-      if (
-        !file.name
-          .toLowerCase()
-          .endsWith(".pptx")
-      ) {
+        try {
 
-        status.innerHTML =
-          '<span class="error">' +
-          '❌ Тек .pptx файл таңдаңыз.' +
-          '</span>';
+            slides =
+                await readPowerPoint(file);
 
-        return;
+            if (!slides.length) {
 
-      }
+                throw new Error(
+                    "Слайдтар табылмады"
+                );
 
+            }
 
-      status.textContent =
-        "Файл: " + file.name;
+            currentSlide = 0;
 
+            createThumbnails();
 
-      loading.style.display =
-        "block";
+            renderCurrentSlide();
 
+        } catch(error) {
 
-      workspace.style.display =
-        "none";
+            console.error(error);
 
-
-      try {
-
-        slides =
-          await readPowerPoint(file);
-
-
-        if (
-          slides.length === 0
-        ) {
-
-          throw new Error(
-            "Презентациядан слайд табылмады."
-          );
+            presentation.innerHTML = `
+                <div class="empty">
+                    <div>
+                        ❌ Презентацияны оқу кезінде
+                        қате пайда болды.<br><br>
+                        ${escapeHTML(error.message)}
+                    </div>
+                </div>
+            `;
 
         }
 
-
-        currentSlide = 0;
-
-
-        workspace.style.display =
-          "grid";
-
-
-        renderSlide();
-
-        createSlideList();
-
-
-        loading.style.display =
-          "none";
-
-
-      } catch(error) {
-
-        console.error(error);
-
-
-        loading.style.display =
-          "none";
-
-
-        status.innerHTML =
-          '<span class="error">' +
-          "❌ Қате: " +
-          escapeHTML(
-            error.message
-          ) +
-          "</span>";
-
-      }
-
     }
-  );
+);
 
 
+/* =========================================
+   READ POWERPOINT
+========================================= */
 
-  /* =========================
-     READ POWERPOINT
-  ========================== */
-
-  async function readPowerPoint(file) {
+async function readPowerPoint(file) {
 
     const arrayBuffer =
-      await file.arrayBuffer();
-
+        await file.arrayBuffer();
 
     const zip =
-      await JSZip.loadAsync(
-        arrayBuffer
-      );
+        await JSZip.loadAsync(arrayBuffer);
 
+
+    /* SLIDE SIZE */
+
+    const presentationXML =
+        await getZipText(
+            zip,
+            "ppt/presentation.xml"
+        );
+
+    if (presentationXML) {
+
+        const parser =
+            new DOMParser();
+
+        const doc =
+            parser.parseFromString(
+                presentationXML,
+                "application/xml"
+            );
+
+        const size =
+            doc.querySelector("sldSz");
+
+        if (size) {
+
+            slideWidthEMU =
+                parseInt(
+                    size.getAttribute("cx")
+                ) || slideWidthEMU;
+
+            slideHeightEMU =
+                parseInt(
+                    size.getAttribute("cy")
+                ) || slideHeightEMU;
+
+        }
+
+    }
+
+
+    /* FIND SLIDES */
 
     const slideFiles = [];
 
-
     zip.forEach(
-      function(
-        relativePath,
-        zipEntry
-      ) {
+        function(path, entry) {
 
-        if (
-          /^ppt\/slides\/slide\d+\.xml$/i
-            .test(relativePath)
-        ) {
+            const match =
+                path.match(
+                    /^ppt\/slides\/slide(\d+)\.xml$/i
+                );
 
-          slideFiles.push({
+            if (match) {
 
-            path:
-              relativePath,
+                slideFiles.push({
+                    path: path,
+                    number:
+                        parseInt(match[1]),
+                    entry: entry
+                });
 
-            number:
-              getSlideNumber(
-                relativePath
-              )
-
-          });
+            }
 
         }
-
-      }
     );
 
 
     slideFiles.sort(
-      function(a,b) {
-
-        return (
-          a.number -
-          b.number
-        );
-
-      }
+        (a,b) =>
+            a.number - b.number
     );
 
 
@@ -1592,774 +811,1447 @@
 
 
     for (
-      const slideFile
-      of slideFiles
+        const slideFile
+        of slideFiles
     ) {
 
-      const xml =
-        await zip
-          .file(
-            slideFile.path
-          )
-          .async("text");
+        const xml =
+            await slideFile.entry.async(
+                "text"
+            );
+
+        const slideNumber =
+            slideFile.number;
 
 
-      const parsed =
-        parseSlideXML(xml);
+        const relationships =
+            await readRelationships(
+                zip,
+                slideNumber
+            );
 
 
-      result.push(parsed);
+        const slide =
+            parseSlide(
+                xml,
+                relationships
+            );
+
+
+        /* LOAD IMAGES */
+
+        for (
+            const image
+            of slide.images
+        ) {
+
+            const target =
+                relationships[image.rId];
+
+            if (!target) {
+                continue;
+            }
+
+            let mediaPath =
+                target;
+
+            if (
+                mediaPath.startsWith("../")
+            ) {
+
+                mediaPath =
+                    "ppt/slides/" +
+                    mediaPath;
+
+            }
+
+            mediaPath =
+                normalizePath(
+                    mediaPath
+                );
+
+
+            const imageFile =
+                zip.file(mediaPath);
+
+            if (!imageFile) {
+                continue;
+            }
+
+
+            const blob =
+                await imageFile.async(
+                    "blob"
+                );
+
+
+            image.url =
+                URL.createObjectURL(
+                    blob
+                );
+
+        }
+
+
+        result.push(slide);
 
     }
 
 
     return result;
-
-  }
-
+}
 
 
-  function getSlideNumber(path) {
+/* =========================================
+   READ RELATIONSHIPS
+========================================= */
 
-    const match =
-      path.match(
-        /slide(\d+)\.xml/i
-      );
+async function readRelationships(
+    zip,
+    slideNumber
+) {
 
+    const path =
+        `ppt/slides/_rels/slide${slideNumber}.xml.rels`;
 
-    return match
-      ? Number(match[1])
-      : 0;
+    const xml =
+        await getZipText(zip, path);
 
-  }
+    const result = {};
 
-
-
-  /* =========================
-     PARSE XML
-  ========================== */
-
-  function parseSlideXML(xml) {
+    if (!xml) {
+        return result;
+    }
 
     const parser =
-      new DOMParser();
-
+        new DOMParser();
 
     const doc =
-      parser.parseFromString(
-        xml,
-        "application/xml"
-      );
-
-
-    const textNodes =
-      Array.from(
-        doc.getElementsByTagName(
-          "a:t"
-        )
-      );
-
-
-    const texts =
-      textNodes
-        .map(
-          node =>
-            node.textContent || ""
-        )
-        .filter(
-          text =>
-            text.trim() !== ""
+        parser.parseFromString(
+            xml,
+            "application/xml"
         );
 
 
-    if (
-      texts.length === 0
-    ) {
+    const relations =
+        doc.querySelectorAll("Relationship");
 
-      return {
 
-        title: "",
+    relations.forEach(
+        rel => {
 
-        paragraphs: []
+            const id =
+                rel.getAttribute("Id");
 
-      };
+            const target =
+                rel.getAttribute("Target");
+
+            if (id && target) {
+
+                result[id] =
+                    target;
+
+            }
+
+        }
+    );
+
+
+    return result;
+}
+
+
+/* =========================================
+   PARSE SLIDE XML
+========================================= */
+
+function parseSlide(
+    xml,
+    relationships
+) {
+
+    const parser =
+        new DOMParser();
+
+    const doc =
+        parser.parseFromString(
+            xml,
+            "application/xml"
+        );
+
+
+    const slide = {
+
+        background:
+            getBackgroundColor(doc),
+
+        texts: [],
+
+        images: []
+
+    };
+
+
+    /* TEXT SHAPES */
+
+    const shapes =
+        doc.querySelectorAll("sp");
+
+
+    shapes.forEach(
+        shape => {
+
+            const txBody =
+                shape.querySelector("txBody");
+
+            if (!txBody) {
+                return;
+            }
+
+
+            const transform =
+                getTransform(shape);
+
+
+            const paragraphs = [];
+
+
+            txBody
+                .querySelectorAll("p")
+                .forEach(
+                    paragraph => {
+
+                        const text =
+                            Array.from(
+                                paragraph.querySelectorAll("t")
+                            )
+                            .map(
+                                node =>
+                                    node.textContent
+                            )
+                            .join("");
+
+
+                        if (text.trim()) {
+
+                            paragraphs.push(
+                                text
+                            );
+
+                        }
+
+                    }
+                );
+
+
+            const fullText =
+                paragraphs.join("\n");
+
+
+            if (!fullText.trim()) {
+                return;
+            }
+
+
+            const style =
+                getTextStyle(shape);
+
+
+            slide.texts.push({
+
+                text:
+                    fullText,
+
+                x:
+                    transform.x,
+
+                y:
+                    transform.y,
+
+                width:
+                    transform.width,
+
+                height:
+                    transform.height,
+
+                fontSize:
+                    style.fontSize,
+
+                color:
+                    style.color,
+
+                bold:
+                    style.bold,
+
+                align:
+                    style.align
+
+            });
+
+        }
+    );
+
+
+    /* IMAGES */
+
+    const pictures =
+        doc.querySelectorAll("pic");
+
+
+    pictures.forEach(
+        picture => {
+
+            const blip =
+                picture.querySelector(
+                    "blip"
+                );
+
+            if (!blip) {
+                return;
+            }
+
+
+            const rId =
+                blip.getAttribute(
+                    "r:embed"
+                ) ||
+                blip.getAttribute(
+                    "embed"
+                );
+
+
+            const transform =
+                getTransform(
+                    picture
+                );
+
+
+            slide.images.push({
+
+                rId:
+
+                    rId,
+
+                x:
+                    transform.x,
+
+                y:
+                    transform.y,
+
+                width:
+                    transform.width,
+
+                height:
+                    transform.height,
+
+                url:
+                    null
+
+            });
+
+        }
+    );
+
+
+    return slide;
+}
+
+
+/* =========================================
+   TRANSFORM
+========================================= */
+
+function getTransform(
+    element
+) {
+
+    let xfrm =
+        element.querySelector(
+            "spPr > xfrm"
+        );
+
+
+    if (!xfrm) {
+
+        xfrm =
+            element.querySelector(
+                "xfrm"
+            );
+
+    }
+
+
+    if (!xfrm) {
+
+        return {
+
+            x: 0,
+            y: 0,
+            width: slideWidthEMU,
+            height: slideHeightEMU
+
+        };
+
+    }
+
+
+    const off =
+        xfrm.querySelector(
+            "off"
+        );
+
+    const ext =
+        xfrm.querySelector(
+            "ext"
+        );
+
+
+    return {
+
+        x:
+            off
+                ? parseInt(
+                    off.getAttribute("x")
+                ) || 0
+                : 0,
+
+        y:
+            off
+                ? parseInt(
+                    off.getAttribute("y")
+                ) || 0
+                : 0,
+
+        width:
+            ext
+                ? parseInt(
+                    ext.getAttribute("cx")
+                ) || 1
+                : slideWidthEMU,
+
+        height:
+            ext
+                ? parseInt(
+                    ext.getAttribute("cy")
+                ) || 1
+                : slideHeightEMU
+
+    };
+
+}
+
+
+/* =========================================
+   TEXT STYLE
+========================================= */
+
+function getTextStyle(
+    shape
+) {
+
+    const firstRun =
+        shape.querySelector(
+            "r"
+        );
+
+
+    let fontSize = 24;
+
+    let color = "#222";
+
+    let bold = false;
+
+
+    if (firstRun) {
+
+        const rPr =
+            firstRun.querySelector(
+                "rPr"
+            );
+
+
+        if (rPr) {
+
+            const sz =
+                rPr.getAttribute(
+                    "sz"
+                );
+
+            if (sz) {
+
+                fontSize =
+                    parseInt(sz) / 100;
+
+            }
+
+
+            if (
+                rPr.getAttribute(
+                    "b"
+                ) === "1"
+            ) {
+
+                bold = true;
+
+            }
+
+
+            const colorNode =
+                rPr.querySelector(
+                    "solidFill srgbClr"
+                );
+
+
+            if (colorNode) {
+
+                const value =
+                    colorNode.getAttribute(
+                        "val"
+                    );
+
+                if (value) {
+
+                    color =
+                        "#" + value;
+
+                }
+
+            }
+
+        }
 
     }
 
 
     return {
 
-      title:
-        texts[0] || "",
+        fontSize:
+            fontSize,
 
-      paragraphs:
-        texts.slice(1)
+        color:
+            color,
+
+        bold:
+            bold,
+
+        align:
+            "left"
 
     };
 
-  }
+}
 
 
+/* =========================================
+   BACKGROUND
+========================================= */
 
-  /* =========================
-     RENDER SLIDE
-  ========================== */
+function getBackgroundColor(
+    doc
+) {
 
-  function renderSlide() {
+    const bg =
+        doc.querySelector(
+            "bg"
+        );
 
-    if (!slides.length) {
-      return;
+
+    if (!bg) {
+
+        return "#ffffff";
+
     }
 
 
-    const data =
-      slides[currentSlide];
+    const color =
+        bg.querySelector(
+            "solidFill srgbClr"
+        );
 
 
-    slideTitle.textContent =
-      data.title ||
-      "Untitled";
+    if (color) {
+
+        const value =
+            color.getAttribute(
+                "val"
+            );
+
+        if (value) {
+
+            return "#" + value;
+
+        }
+
+    }
 
 
-    slideContent.innerHTML =
-      "";
+    return "#ffffff";
+}
 
 
-    data.paragraphs.forEach(
-      function(text) {
+/* =========================================
+   RENDER SLIDE
+========================================= */
 
-        const paragraph =
-          document.createElement(
+function renderCurrentSlide() {
+
+    if (!slides.length) {
+        return;
+    }
+
+
+    const slide =
+        slides[currentSlide];
+
+
+    presentation.innerHTML = "";
+
+
+    const wrapper =
+        document.createElement(
             "div"
-          );
+        );
+
+    wrapper.className =
+        "slide-wrapper";
 
 
-        paragraph.style.marginBottom =
-          "13px";
+    const canvas =
+        document.createElement(
+            "div"
+        );
+
+    canvas.className =
+        "slide-canvas";
 
 
-        const words =
-          text.split(
-            /(\s+)/
-          );
+    canvas.style.aspectRatio =
+        `${slideWidthEMU} / ${slideHeightEMU}`;
 
 
-        words.forEach(
-          function(part) {
+    canvas.style.background =
+        slide.background;
 
-            if (
-              /^\s+$/.test(part)
-            ) {
 
-              paragraph.appendChild(
-                document.createTextNode(
-                  part
-                )
-              );
+    /* IMAGES FIRST */
 
-              return;
+    slide.images.forEach(
+        image => {
 
+            if (!image.url) {
+                return;
             }
 
 
-            if (
-              !part.trim()
-            ) {
-
-              return;
-
-            }
-
-
-            const word =
-              document.createElement(
-                "span"
-              );
-
-
-            word.className =
-              "word";
-
-
-            word.textContent =
-              part;
-
-
-            word.addEventListener(
-              "click",
-              function() {
-
-                selectWord(
-                  cleanWord(part),
-                  word
+            const img =
+                document.createElement(
+                    "img"
                 );
 
-              }
-            );
+            img.className =
+                "slide-image";
 
 
-            paragraph.appendChild(
-              word
-            );
-
-          }
-        );
+            img.src =
+                image.url;
 
 
-        slideContent.appendChild(
-          paragraph
-        );
+            img.style.left =
+                percent(
+                    image.x,
+                    slideWidthEMU
+                );
 
-      }
+
+            img.style.top =
+                percent(
+                    image.y,
+                    slideHeightEMU
+                );
+
+
+            img.style.width =
+                percent(
+                    image.width,
+                    slideWidthEMU
+                );
+
+
+            img.style.height =
+                percent(
+                    image.height,
+                    slideHeightEMU
+                );
+
+
+            canvas.appendChild(img);
+
+        }
     );
 
 
-    slideNumber.textContent =
-      `${currentSlide + 1} / ${slides.length}`;
+    /* TEXT */
+
+    slide.texts.forEach(
+        textBox => {
+
+            const box =
+                document.createElement(
+                    "div"
+                );
 
 
-    slideCounterLabel.textContent =
-      `${currentSlide + 1}-слайд`;
+            box.className =
+                "slide-text-box";
 
 
-    prevBtn.disabled =
-      currentSlide === 0;
+            box.style.left =
+                percent(
+                    textBox.x,
+                    slideWidthEMU
+                );
 
 
-    nextBtn.disabled =
-      currentSlide ===
-      slides.length - 1;
+            box.style.top =
+                percent(
+                    textBox.y,
+                    slideHeightEMU
+                );
 
 
-    updateSlideThumbnails();
+            box.style.width =
+                percent(
+                    textBox.width,
+                    slideWidthEMU
+                );
 
-  }
+
+            box.style.height =
+                percent(
+                    textBox.height,
+                    slideHeightEMU
+                );
 
 
+            box.style.fontSize =
+                (
+                    textBox.fontSize *
+                    1.333
+                ) + "px";
 
-  /* =========================
-     SELECT WORD
-  ========================== */
 
-  async function selectWord(
-    word,
-    element
-  ) {
+            box.style.color =
+                textBox.color;
 
-    if (!word) {
-      return;
-    }
 
+            box.style.fontWeight =
+                textBox.bold
+                    ? "700"
+                    : "400";
+
+
+            box.style.lineHeight =
+                "1.2";
+
+
+            const lines =
+                textBox.text.split(
+                    "\n"
+                );
+
+
+            lines.forEach(
+                (line, lineIndex) => {
+
+                    const words =
+                        line.split(
+                            /(\s+)/
+                        );
+
+
+                    words.forEach(
+                        part => {
+
+                            if (
+                                /^\s+$/.test(
+                                    part
+                                )
+                            ) {
+
+                                box.appendChild(
+                                    document.createTextNode(
+                                        part
+                                    )
+                                );
+
+                                return;
+
+                            }
+
+
+                            if (
+                                !part.trim()
+                            ) {
+                                return;
+                            }
+
+
+                            const span =
+                                document.createElement(
+                                    "span"
+                                );
+
+
+                            span.className =
+                                "slide-word";
+
+
+                            span.textContent =
+                                part;
+
+
+                            span.addEventListener(
+                                "click",
+                                function(event) {
+
+                                    event.stopPropagation();
+
+
+                                    if (
+                                        selectedWordElement
+                                    ) {
+
+                                        selectedWordElement
+                                            .classList
+                                            .remove(
+                                                "selected"
+                                            );
+
+                                    }
+
+
+                                    selectedWordElement =
+                                        span;
+
+
+                                    span.classList.add(
+                                        "selected"
+                                    );
+
+
+                                    const clean =
+                                        cleanWord(
+                                            part
+                                        );
+
+
+                                    selectWord(
+                                        clean,
+                                        span
+                                    );
+
+                                }
+                            );
+
+
+                            box.appendChild(
+                                span
+                            );
+
+                        }
+                    );
+
+
+                    if (
+                        lineIndex <
+                        lines.length - 1
+                    ) {
+
+                        box.appendChild(
+                            document.createElement(
+                                "br"
+                            )
+                        );
+
+                    }
+
+                }
+            );
+
+
+            canvas.appendChild(box);
+
+        }
+    );
+
+
+    wrapper.appendChild(
+        canvas
+    );
+
+
+    presentation.appendChild(
+        wrapper
+    );
+
+
+    slideCounter.textContent =
+        `Слайд ${currentSlide + 1} / ${slides.length}`;
+
+
+    updateThumbnails();
+
+}
+
+
+/* =========================================
+   THUMBNAILS
+========================================= */
+
+function createThumbnails() {
+
+    thumbnails.innerHTML = "";
+
+
+    slides.forEach(
+        (slide, index) => {
+
+            const thumb =
+                document.createElement(
+                    "div"
+                );
+
+
+            thumb.className =
+                "thumbnail";
+
+
+            thumb.dataset.index =
+                index;
+
+
+            const preview =
+                document.createElement(
+                    "div"
+                );
+
+
+            preview.className =
+                "thumbnail-preview";
+
+
+            preview.style.background =
+                slide.background;
+
+
+            /* SIMPLE THUMBNAIL */
+
+            slide.images.forEach(
+                image => {
+
+                    if (!image.url) {
+                        return;
+                    }
+
+
+                    const img =
+                        document.createElement(
+                            "img"
+                        );
+
+
+                    img.src =
+                        image.url;
+
+
+                    img.style.position =
+                        "absolute";
+
+
+                    img.style.left =
+                        percent(
+                            image.x,
+                            slideWidthEMU
+                        );
+
+
+                    img.style.top =
+                        percent(
+                            image.y,
+                            slideHeightEMU
+                        );
+
+
+                    img.style.width =
+                        percent(
+                            image.width,
+                            slideWidthEMU
+                        );
+
+
+                    img.style.height =
+                        percent(
+                            image.height,
+                            slideHeightEMU
+                        );
+
+
+                    img.style.objectFit =
+                        "fill";
+
+
+                    preview.style.position =
+                        "relative";
+
+
+                    preview.appendChild(
+                        img
+                    );
+
+                }
+            );
+
+
+            const number =
+                document.createElement(
+                    "div"
+                );
+
+
+            number.className =
+                "thumbnail-number";
+
+
+            number.textContent =
+                index + 1;
+
+
+            thumb.appendChild(
+                preview
+            );
+
+
+            thumb.appendChild(
+                number
+            );
+
+
+            thumb.addEventListener(
+                "click",
+                function() {
+
+                    currentSlide =
+                        index;
+
+                    renderCurrentSlide();
+
+                }
+            );
+
+
+            thumbnails.appendChild(
+                thumb
+            );
+
+        }
+    );
+
+
+    updateThumbnails();
+
+}
+
+
+/* =========================================
+   THUMBNAIL ACTIVE
+========================================= */
+
+function updateThumbnails() {
 
     document
-      .querySelectorAll(
-        ".word.selected"
-      )
-      .forEach(
-        item =>
-          item.classList.remove(
-            "selected"
-          )
-      );
+        .querySelectorAll(
+            ".thumbnail"
+        )
+        .forEach(
+            (element, index) => {
+
+                element.classList.toggle(
+                    "active",
+                    index === currentSlide
+                );
+
+            }
+        );
+
+}
 
 
-    if (element) {
+/* =========================================
+   NAVIGATION
+========================================= */
 
-      element.classList.add(
-        "selected"
-      );
+prevBtn.addEventListener(
+    "click",
+    function() {
 
+        if (
+            currentSlide > 0
+        ) {
+
+            currentSlide--;
+
+            renderCurrentSlide();
+
+        }
+
+    }
+);
+
+
+nextBtn.addEventListener(
+    "click",
+    function() {
+
+        if (
+            currentSlide <
+            slides.length - 1
+        ) {
+
+            currentSlide++;
+
+            renderCurrentSlide();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   KEYBOARD
+========================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "ArrowLeft"
+        ) {
+
+            prevBtn.click();
+
+        }
+
+
+        if (
+            event.key === "ArrowRight"
+        ) {
+
+            nextBtn.click();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   SELECT WORD
+========================================= */
+
+async function selectWord(
+    word,
+    element
+) {
+
+    if (!word) {
+        return;
     }
 
 
-    selectedWord =
-      word;
+    selectedWord.textContent =
+        word;
 
 
-    selectedWordElement.textContent =
-      word;
+    translation.textContent =
+        "Аударылып жатыр...";
 
 
-    speakBtn.disabled =
-      false;
+    const result =
+        await translateWord(
+            word
+        );
 
 
-    translationElement.classList
-      .add("loading-text");
+    translation.textContent =
+        result;
+
+}
 
 
-    translationElement.textContent =
-      "⏳ Аударылып жатыр...";
+/* =========================================
+   TRANSLATION
+========================================= */
 
-
-    const translation =
-      await translateWord(word);
-
-
-    translationElement.classList
-      .remove("loading-text");
-
-
-    translationElement.textContent =
-      translation;
-
-  }
-
-
-
-  /* =========================
-     CLEAN WORD
-  ========================== */
-
-  function cleanWord(word) {
-
-    return word
-
-      .replace(
-        /[.,!?;:"'“”«»()[\]{}]/g,
-        ""
-      )
-
-      .trim();
-
-  }
-
-
-
-  /* =========================
-     TRANSLATION
-  ========================== */
-
-  async function translateWord(word) {
+async function translateWord(
+    word
+) {
 
     const key =
-      word.toLowerCase();
+        word.toLowerCase();
 
 
     if (
-      translationCache[key]
+        translationCache[key]
     ) {
 
-      return translationCache[key];
+        return translationCache[key];
 
     }
 
 
     try {
 
-      const url =
-        "https://api.mymemory.translated.net/get" +
-        "?q=" +
-        encodeURIComponent(word) +
-        "&langpair=kk|en";
+        const url =
+            "https://api.mymemory.translated.net/get" +
+            "?q=" +
+            encodeURIComponent(word) +
+            "&langpair=kk|en";
 
 
-      const response =
-        await fetch(url);
+        const response =
+            await fetch(url);
 
 
-      if (!response.ok) {
+        if (!response.ok) {
 
-        throw new Error(
-          "Translation request failed"
-        );
+            throw new Error(
+                "Translation request failed"
+            );
 
-      }
-
-
-      const data =
-        await response.json();
+        }
 
 
-      if (
-        data &&
-        data.responseData &&
-        data.responseData.translatedText
-      ) {
-
-        const result =
-          data.responseData
-            .translatedText;
+        const data =
+            await response.json();
 
 
-        translationCache[key] =
-          result;
+        if (
+            data &&
+            data.responseData &&
+            data.responseData.translatedText
+        ) {
+
+            const result =
+                data.responseData
+                    .translatedText;
 
 
-        return result;
+            translationCache[key] =
+                result;
 
-      }
+
+            return result;
+
+        }
 
 
-      return "Аударма табылмады.";
+        return "Аударма табылмады.";
 
     } catch(error) {
 
-      console.error(error);
+        console.error(error);
 
-
-      return
-        "⚠️ Аударма қызметіне қосылу мүмкін болмады.";
+        return "⚠️ Аударма қызметіне қосылу мүмкін болмады.";
 
     }
 
-  }
+}
 
 
+/* =========================================
+   SPEECH
+========================================= */
 
-  /* =========================
-     TEXT TO SPEECH
-  ========================== */
-
-  speakBtn.addEventListener(
+speakBtn.addEventListener(
     "click",
     function() {
 
-      if (!selectedWord) {
-        return;
-      }
+        const english =
+            translation.textContent;
 
-
-      const english =
-        translationElement.textContent;
-
-
-      if (
-        !english ||
-        english.startsWith("⚠️") ||
-        english.startsWith("⏳")
-      ) {
-
-        return;
-
-      }
-
-
-      if (
-        !("speechSynthesis" in window)
-      ) {
-
-        alert(
-          "Бұл браузерде дыбыстап оқу қолжетімсіз."
-        );
-
-        return;
-
-      }
-
-
-      speechSynthesis.cancel();
-
-
-      const speech =
-        new SpeechSynthesisUtterance(
-          english
-        );
-
-
-      speech.lang =
-        "en-US";
-
-
-      speech.rate =
-        0.85;
-
-
-      speech.pitch =
-        1;
-
-
-      speechSynthesis.speak(
-        speech
-      );
-
-    }
-  );
-
-
-
-  /* =========================
-     NAVIGATION
-  ========================== */
-
-  prevBtn.addEventListener(
-    "click",
-    function() {
-
-      if (
-        currentSlide > 0
-      ) {
-
-        currentSlide--;
-
-        resetTranslation();
-
-        renderSlide();
-
-      }
-
-    }
-  );
-
-
-  nextBtn.addEventListener(
-    "click",
-    function() {
-
-      if (
-        currentSlide <
-        slides.length - 1
-      ) {
-
-        currentSlide++;
-
-        resetTranslation();
-
-        renderSlide();
-
-      }
-
-    }
-  );
-
-
-
-  /* =========================
-     KEYBOARD
-  ========================== */
-
-  document.addEventListener(
-    "keydown",
-    function(event) {
-
-      if (!slides.length) {
-        return;
-      }
-
-
-      if (
-        event.key ===
-        "ArrowRight"
-      ) {
 
         if (
-          currentSlide <
-          slides.length - 1
+            !english ||
+            english ===
+            "Слайдтағы сөзді басыңыз" ||
+            english ===
+            "Аударылып жатыр..."
         ) {
 
-          currentSlide++;
-
-          resetTranslation();
-
-          renderSlide();
+            return;
 
         }
 
-      }
+
+        speechSynthesis.cancel();
 
 
-      if (
-        event.key ===
-        "ArrowLeft"
-      ) {
+        const speech =
+            new SpeechSynthesisUtterance(
+                english
+            );
 
-        if (
-          currentSlide > 0
-        ) {
 
-          currentSlide--;
+        speech.lang =
+            "en-US";
 
-          resetTranslation();
 
-          renderSlide();
+        speech.rate =
+            0.85;
 
-        }
 
-      }
+        speech.pitch =
+            1;
+
+
+        speechSynthesis.speak(
+            speech
+        );
 
     }
-  );
+);
 
 
+/* =========================================
+   HELPERS
+========================================= */
 
-  /* =========================
-     RESET TRANSLATION
-  ========================== */
+async function getZipText(
+    zip,
+    path
+) {
 
-  function resetTranslation() {
-
-    selectedWord = "";
-
-
-    selectedWordElement.textContent =
-      "Сөзді басыңыз";
-
-
-    translationElement.classList
-      .remove("loading-text");
+    const file =
+        zip.file(path);
 
 
-    translationElement.textContent =
-      "Презентациядағы кез келген сөзді басыңыз.";
+    if (!file) {
+        return null;
+    }
 
 
-    speakBtn.disabled =
-      true;
-
-
-    document
-      .querySelectorAll(
-        ".word.selected"
-      )
-      .forEach(
-        item =>
-          item.classList.remove(
-            "selected"
-          )
-      );
-
-  }
-
-
-
-  /* =========================
-     THUMBNAILS
-  ========================== */
-
-  function createSlideList() {
-
-    slideList.innerHTML =
-      "";
-
-
-    slides.forEach(
-      function(slide, index) {
-
-        const thumb =
-          document.createElement(
-            "div"
-          );
-
-
-        thumb.className =
-          "slide-thumb";
-
-
-        thumb.textContent =
-          `${index + 1}. ${
-            slide.title
-          }`;
-
-
-        thumb.addEventListener(
-          "click",
-          function() {
-
-            currentSlide =
-              index;
-
-
-            resetTranslation();
-
-            renderSlide();
-
-          }
-        );
-
-
-        slideList.appendChild(
-          thumb
-        );
-
-      }
+    return await file.async(
+        "text"
     );
 
-  }
+}
 
 
+function normalizePath(
+    path
+) {
 
-  function updateSlideThumbnails() {
-
-    const thumbnails =
-      document.querySelectorAll(
-        ".slide-thumb"
-      );
+    const parts =
+        path.split("/");
 
 
-    thumbnails.forEach(
-      function(
-        thumb,
-        index
-      ) {
+    const result = [];
+
+
+    for (
+        const part
+        of parts
+    ) {
 
         if (
-          index ===
-          currentSlide
+            !part ||
+            part === "."
+        ) {
+            continue;
+        }
+
+
+        if (
+            part === ".."
         ) {
 
-          thumb.classList.add(
-            "active"
-          );
-
-          thumb.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-            inline: "center"
-          });
+            result.pop();
 
         } else {
 
-          thumb.classList.remove(
-            "active"
-          );
+            result.push(part);
 
         }
 
-      }
-    );
-
-  }
+    }
 
 
+    return result.join("/");
 
-  /* =========================
-     ESCAPE HTML
-  ========================== */
+}
 
-  function escapeHTML(text) {
 
-    return text
+function percent(
+    value,
+    total
+) {
 
-      .replace(
-        /&/g,
-        "&amp;"
-      )
+    return (
+        value / total * 100
+    ) + "%";
 
-      .replace(
-        /</g,
-        "&lt;"
-      )
+}
 
-      .replace(
-        />/g,
-        "&gt;"
-      )
 
-      .replace(
-        /"/g,
-        "&quot;"
-      )
+function cleanWord(
+    word
+) {
 
-      .replace(
-        /'/g,
-        "&#039;"
-      );
+    return word
+        .replace(
+            /^[.,!?;:"'“”«»()\[\]{}]+/,
+            ""
+        )
+        .replace(
+            /[.,!?;:"'“”«»()\[\]{}]+$/,
+            ""
+        )
+        .trim();
 
-  }
+}
 
+
+function escapeHTML(
+    text
+) {
+
+    return String(text)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
 
 </script>
 
 </body>
-
 </html>
